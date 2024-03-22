@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 
+import shimGetUserMedia from './utils/shim-get-user-media';
 import createDecoder, { type Decoder } from "./utils/create-decoder"
 import type ScannerProps from "./types/scanner-props"
 import type Styleable from "./types/styleable"
@@ -24,15 +25,13 @@ export default function Scanner({
   const preview = useRef<HTMLVideoElementExtended>(null)
   const timeout = useRef<NodeJS.Timeout | null>(null)
   const stopCamera = useRef<(() => void) | null>(null)
+  const isMounted = useRef<boolean>(false)
 
   const decoder = useRef<Decoder | null>(null)
   useEffect(() => { decoder.current = createDecoder(decoderOptions) }, [decoderOptions])
 
   const handleVideo = (stream: MediaStream) => {
-    if (!preview.current) {
-      timeout.current = setTimeout(() => handleVideo(stream), 200)
-      return
-    }
+    if (!preview.current) return
 
     if (preview.current.srcObject !== undefined) {
       preview.current.srcObject = stream
@@ -61,10 +60,7 @@ export default function Scanner({
   }
 
   const check = () => {
-    if (!preview.current) {
-      timeout.current = setTimeout(check, delay)
-      return
-    }
+    if (!preview.current) return
 
     if (preview.current.readyState === preview.current.HAVE_ENOUGH_DATA) {
       const decode = () => {
@@ -85,6 +81,12 @@ export default function Scanner({
     if (timeout.current) clearTimeout(timeout.current)
     if (stopCamera) stopCamera.current?.()
     preview.current?.removeEventListener('canplay', handleCanPlay)
+    if (preview.current) {
+      preview.current.removeEventListener('canplay', handleCanPlay)
+      preview.current.src = ''
+      preview.current.srcObject = null
+      preview.current.load()
+    }
   }
 
   useEffect(() => {
@@ -98,22 +100,39 @@ export default function Scanner({
       })
       .catch(onError)
     return release
-  }, [])
+  }, [preview])
 
   useEffect(() => {
     if (selectedDevice == undefined || selectedDevice >= devices.length) return
 
     navigator.mediaDevices
       .getUserMedia({
+        audio: false,
         video: {
           deviceId: devices[selectedDevice].deviceId
         }
       })
-      .then(handleVideo)
+      .then(stream => {
+        if(isMounted) handleVideo(stream)
+        else for (const track of stream.getTracks()) {
+          stream.removeTrack(track)
+          track.stop()
+        }
+      })
       .catch(onError)
 
     return release
   }, [selectedDevice])
+
+  useEffect(() => {
+    shimGetUserMedia()
+    isMounted.current = true
+
+    return () => {
+      isMounted.current = false
+      release()
+    }
+  }, [])
 
   return <div id="barcode-scanner" className={className} style={style}>
     <video

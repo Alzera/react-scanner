@@ -1,6 +1,6 @@
 {
   "name": "@alzera/react-scanner",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Barcode scanner component for React apps",
   "license": "MIT",
   "author": "Alzera Cita <alzeracita23@gmail.com>",
@@ -37,15 +37,16 @@
     "@typescript-eslint/eslint-plugin": "^7.1.1",
     "@typescript-eslint/parser": "^7.1.1",
     "@vitejs/plugin-react": "^4.2.1",
+    "barcode-detector": "^2.2.4",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.2.2",
     "vite": "^5.1.6",
-    "vite-plugin-dts": "^3.7.3"
+    "vite-plugin-dts": "^3.7.3",
+    "webrtc-adapter": "^8.2.3"
   },
   "peerDependencies": {
-    "barcode-detector": "^2.2.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   }

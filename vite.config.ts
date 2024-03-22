@@ -25,7 +25,11 @@ export default defineConfig({
       external: [
         'react',
         'react/jsx-runtime',
-        'barcode-detector/pure',
+        // 'barcode-detector/pure',
+        // 'webrtc-adapter/dist/utils',
+        // 'webrtc-adapter/dist/chrome/getusermedia',
+        // 'webrtc-adapter/dist/firefox/getusermedia',
+        // 'webrtc-adapter/dist/safari/safari_shim',
       ],
       output: {
         exports: "named"
