@@ -1,6 +1,6 @@
 # React QR Scanner
 
-<a href="https://www.npmjs.com/package/@alzera/react-scanner"><img src="https://badge.fury.io/js/@alzera%2Freact-scanner.svg" alt="npm version"></a> <a href="https://bundlephobia.com/package/@alzera/react-scanner"><img src="https://img.shields.io/bundlephobia/min/%40alzera%2Freact-scanner" title="minified size"></a> <a href="https://bundlephobia.com/package/@alzera/react-scanner"><img src="https://img.shields.io/bundlephobia/minzip/%40alzera%2Freact-scanner" title="minified zip size"></a>
+<a href="https://www.npmjs.com/package/@alzera/react-scanner" target="_blank"><img src="https://badge.fury.io/js/@alzera%2Freact-scanner.svg" alt="npm version"></a> <a href="https://www.npmjs.com/package/@alzera/react-scanner" target="_blank"><img alt="NPM Downloads" src="https://img.shields.io/npm/dt/%40alzera%2Freact-scanner"></a> <a href="https://pkg-size.dev/@alzera/react-scanner?no-peers" target="_blank"><img src="https://pkg-size.dev/badge/install/174740" title="Install size for @alzera/react-scanner"></a> <a href="https://bundlephobia.com/package/@alzera/react-scanner" target="_blank"><img src="https://img.shields.io/bundlephobia/min/%40alzera%2Freact-scanner" title="minified size"></a> <a href="https://bundlephobia.com/package/@alzera/react-scanner" target="_blank"><img src="https://img.shields.io/bundlephobia/minzip/%40alzera%2Freact-scanner" title="minified zip size"></a>
 
 `@alzera/react-scanner` is a lightweight and simple-to-use React library for integrating QR code scanning functionality into your web applications. The primary goal of this library is to provide a hassle-free solution for developers who need a quick and efficient way to incorporate QR code scanning without the bloat.
 
@@ -19,21 +19,21 @@ Install `@alzera/react-scanner` using your preferred package manager:
 
 ## Components
 
-### QRScanner
+### BarcodeScanner
 
 Combined version of Scanner component and DropZone component, comes with a built-in button that allows users to switch between the scanning mode and the drop zone mode.
 
 #### Basic Example
 
     import React, { useState } from 'react';
-    import QRScanner from '@alzera/qr-scanner';
+    import { BarcodeScanner } from '@alzera/react-scanner';
     
     export default function MyComponent(){
       const [scannedData, setScannedData] = useState('');
     
       return (
         <div style={{ maxWidth: '500px' }}>
-          <QRScanner onScan={(d) => d && setScannedData(d)} />
+          <BarcodeScanner onScan={(d) => d && setScannedData(d)} />
           {scannedData && <p>Scanned Data: {scannedData}</p>}
         </div>
       );
@@ -62,7 +62,7 @@ Simple component wrapper for barcode-detector library.
 #### Basic Example
 
     import React, { useState } from 'react';
-    import { Scanner } from '@alzera/qr-scanner';
+    import { Scanner } from '@alzera/react-scanner';
     
     export default function MyComponent(){
       const [scannedData, setScannedData] = useState('');
@@ -95,7 +95,7 @@ Simple component wrapper for barcode-detector library.
 #### Basic Example
 
     import React, { useState } from 'react';
-    import { DropZone } from '@alzera/qr-scanner';
+    import { DropZone } from '@alzera/react-scanner';
     
     export default function MyComponent(){
       const [scannedData, setScannedData] = useState('');
