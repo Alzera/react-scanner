@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 
 import shimGetUserMedia from './utils/shim-get-user-media';
-import createDecoder, { type Decoder } from "./utils/create-decoder"
+import { getDevices, getUserMedia, handleStream, releaseStream } from "./utils";
+import { createDecoder, type Decoder } from "./utils/create-decoder"
 import type ScannerProps from "./types/scanner-props"
 import type Styleable from "./types/styleable"
 
@@ -23,101 +24,50 @@ export default function Scanner({
   const [selectedDevice, setSelectedDevice] = useState<number | undefined>();
 
   const preview = useRef<HTMLVideoElementExtended>(null)
-  const timeout = useRef<NodeJS.Timeout | null>(null)
-  const stopCamera = useRef<(() => void) | null>(null)
+  const timeoutId = useRef<NodeJS.Timeout | null>(null)
+  const stream = useRef<MediaStream | null>(null)
   const isMounted = useRef<boolean>(false)
 
   const decoder = useRef<Decoder | null>(null)
   useEffect(() => { decoder.current = createDecoder(decoderOptions) }, [decoderOptions])
 
-  const handleVideo = (stream: MediaStream) => {
+  const decode = () => {
     if (!preview.current) return
 
-    if (preview.current.srcObject !== undefined) {
-      preview.current.srcObject = stream
-    } else if (preview.current.mozSrcObject !== undefined) {
-      preview.current.mozSrcObject = stream
-    } else if (window.URL.createObjectURL) {
-      preview.current.src = window.URL.createObjectURL(stream as any)
-    } else if (window.webkitURL) {
-      preview.current.src = window.webkitURL.createObjectURL(stream as any)
-    } else {
-      preview.current.src = stream as any
-    }
-
-    const streamTrack = stream.getTracks()[0]
-    stopCamera.current = streamTrack.stop.bind(streamTrack)
-    preview.current.addEventListener('canplay', handleCanPlay)
-  }
-
-  const handleCanPlay = () => {
-    if (!preview.current) return
-
-    preview.current.play()
-      .then(() => timeout.current = setTimeout(check, delay))
-      .catch(onError)
-    preview.current.removeEventListener('canplay', handleCanPlay)
-  }
-
-  const check = () => {
-    if (!preview.current) return
-
-    if (preview.current.readyState === preview.current.HAVE_ENOUGH_DATA) {
-      const decode = () => {
-        if (!preview.current) return
-
-        decoder.current?.(preview.current).then((code) => {
-          timeout.current = setTimeout(decode, delay)
-          if (code) onScan(code)
-        })
-      }
-      decode()
-    } else {
-      timeout.current = setTimeout(check, delay)
-    }
+    decoder.current?.(preview.current).then((code) => {
+      timeoutId.current = setTimeout(decode, delay)
+      if (code) onScan(code)
+    })
   }
 
   const release = () => {
-    if (timeout.current) clearTimeout(timeout.current)
-    if (stopCamera) stopCamera.current?.()
-    preview.current?.removeEventListener('canplay', handleCanPlay)
-    if (preview.current) {
-      preview.current.removeEventListener('canplay', handleCanPlay)
-      preview.current.src = ''
-      preview.current.srcObject = null
-      preview.current.load()
-    }
+    if(timeoutId.current) clearTimeout(timeoutId.current)
+    stream.current && releaseStream(preview.current, stream.current)
   }
 
   useEffect(() => {
-    navigator
-      .mediaDevices
-      .enumerateDevices()
-      .then(ds => ds.filter((d) => d.kind === 'videoinput'))
+    getDevices()
       .then(ds => {
         setDevices(ds)
         setSelectedDevice(0)
       })
       .catch(onError)
+
     return release
   }, [preview])
 
   useEffect(() => {
     if (selectedDevice == undefined || selectedDevice >= devices.length) return
 
-    navigator.mediaDevices
-      .getUserMedia({
-        audio: false,
-        video: {
-          deviceId: devices[selectedDevice].deviceId
-        }
-      })
-      .then(stream => {
-        if(isMounted) handleVideo(stream)
-        else for (const track of stream.getTracks()) {
-          stream.removeTrack(track)
-          track.stop()
-        }
+    const selected = devices[selectedDevice]
+    getUserMedia(selected.deviceId)
+      .then(s => {
+        if (!preview.current) return
+        stream.current = s
+
+        if (isMounted){
+          handleStream(preview.current, s, delay, selected).then(decode)
+        } else releaseStream(preview.current, s)
       })
       .catch(onError)
 
@@ -138,6 +88,7 @@ export default function Scanner({
     <video
       ref={preview}
       preload="none"
+      muted
       playsInline
       style={{
         aspectRatio: aspectRatio,
@@ -145,6 +96,8 @@ export default function Scanner({
         height: '100%',
         objectFit: 'cover',
         transform: flipHorizontally ? 'scaleX(1)' : 'scaleX(-1)',
+        userSelect: 'none',
+        pointerEvents: 'none',
       }} />
     {devices.length > 1 && <select
       value={selectedDevice}

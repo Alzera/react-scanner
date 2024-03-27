@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import createDecoder, { type Decoder } from "./utils/create-decoder"
+import { createDecoder, type Decoder } from "./utils/create-decoder"
 import type ScannerProps from "./types/scanner-props";
 import type Styleable from "./types/styleable";
 
