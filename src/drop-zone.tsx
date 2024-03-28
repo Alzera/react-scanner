@@ -61,6 +61,8 @@ export default function DropZone({
           position: 'absolute',
           inset: '0',
           opacity: '0',
+          width: '100%',
+          height: '100%',
         }}
       />
       {children || <div>Drop an image here to scan<br />or<br /><u>Click here to browse</u></div>}
