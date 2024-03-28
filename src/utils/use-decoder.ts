@@ -1,8 +1,9 @@
 import { BarcodeDetector, type BarcodeDetectorOptions } from "barcode-detector/pure";
+import { useEffect, useRef } from "react";
 
 export type Decoder = (imageData: ImageBitmapSourceWebCodecs) => Promise<string | null | undefined>
 
-export const createDecoder = (opts?: BarcodeDetectorOptions): Decoder => {
+const createDecoder = (opts?: BarcodeDetectorOptions) => {
   const detector = new BarcodeDetector(opts || {
     formats: ['qr_code']
   })
@@ -14,4 +15,12 @@ export const createDecoder = (opts?: BarcodeDetectorOptions): Decoder => {
       return null
     }
   }
+}
+
+export const useDecoder = (opts?: BarcodeDetectorOptions) => {
+  const decoder = useRef<Decoder>(createDecoder(opts))
+  useEffect(() => { 
+    decoder.current = createDecoder(opts)
+  }, [opts])
+  return decoder
 }

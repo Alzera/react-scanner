@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 
 import shimGetUserMedia from './utils/shim-get-user-media';
-import { getDevices, getUserMedia, handleStream, releaseStream } from "./utils";
-import { createDecoder, type Decoder } from "./utils/create-decoder"
+import { getDevices, getUserMedia, handleStream, releaseStream } from "./utils/controller";
+import { useDecoder } from "./utils/use-decoder"
 import type ScannerProps from "./types/scanner-props"
 import type Styleable from "./types/styleable"
 
@@ -27,21 +27,22 @@ export default function Scanner({
   const timeoutId = useRef<NodeJS.Timeout | null>(null)
   const stream = useRef<MediaStream | null>(null)
   const isMounted = useRef<boolean>(false)
-
-  const decoder = useRef<Decoder | null>(null)
-  useEffect(() => { decoder.current = createDecoder(decoderOptions) }, [decoderOptions])
+  const decoder = useDecoder(decoderOptions)
 
   const decode = () => {
     if (!preview.current) return
 
-    decoder.current?.(preview.current).then((code) => {
-      timeoutId.current = setTimeout(decode, delay)
-      if (code) onScan(code)
-    })
+    decoder
+      .current(preview.current)
+      .then((code) => {
+        timeoutId.current = setTimeout(decode, delay)
+        if (code) onScan(code)
+      })
+      .catch(onError)
   }
 
   const release = () => {
-    if(timeoutId.current) clearTimeout(timeoutId.current)
+    if (timeoutId.current) clearTimeout(timeoutId.current)
     stream.current && releaseStream(preview.current, stream.current)
   }
 
@@ -65,7 +66,7 @@ export default function Scanner({
         if (!preview.current) return
         stream.current = s
 
-        if (isMounted){
+        if (isMounted) {
           handleStream(preview.current, s, delay, selected).then(decode)
         } else releaseStream(preview.current, s)
       })

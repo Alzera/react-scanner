@@ -1,6 +1,4 @@
-import { useEffect, useRef } from "react";
-
-import { createDecoder, type Decoder } from "./utils/create-decoder"
+import { useDecoder } from "./utils/use-decoder"
 import type ScannerProps from "./types/scanner-props";
 import type Styleable from "./types/styleable";
 
@@ -14,17 +12,13 @@ export default function DropZone({
 }: Pick<ScannerProps, 'onScan' | 'onError' | 'decoderOptions'> & Styleable & {
   children?: React.ReactNode
 }) {
-  const decoder = useRef<Decoder | null>(null)
-  useEffect(() => { decoder.current = createDecoder(decoderOptions) }, [decoderOptions])
+  const decoder = useDecoder(decoderOptions)
 
-  const handleDetect = async (file: File) => {
-    try {
-      const data = await decoder.current?.(file)
-      if (!data) return
-      onScan(data)
-    } catch (error) {
-      onError?.(error)
-    }
+  const handleDetect = (file: File) => {
+    decoder
+      .current(file)
+      .then(d => d && onScan)
+      .catch(onError)
   }
 
   return (
