@@ -5,6 +5,7 @@ import { getDevices, getUserMedia, handleStream, releaseStream } from "./utils/c
 import { useDecoder } from "./utils/use-decoder"
 import type ScannerProps from "./types/scanner-props"
 import type Styleable from "./types/styleable"
+import { useLocalStorage } from "./utils/use-local-storage";
 
 interface HTMLVideoElementExtended extends HTMLVideoElement {
   mozSrcObject?: MediaStream
@@ -21,13 +22,14 @@ export default function Scanner({
   style,
 }: ScannerProps & Styleable) {
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
-  const [selectedDevice, setSelectedDevice] = useState<number | undefined>();
+  const [selectedDevice, setSelectedDevice] = useState<string | undefined>();
 
   const preview = useRef<HTMLVideoElementExtended>(null)
   const timeoutId = useRef<NodeJS.Timeout | null>(null)
   const stream = useRef<MediaStream | null>(null)
   const isMounted = useRef<boolean>(false)
   const decoder = useDecoder(decoderOptions)
+  const [lastDeviceId, setLastDeviceId] = useLocalStorage<string | null>("last-device-id", null)
 
   const decode = () => {
     if (!preview.current) return
@@ -50,7 +52,7 @@ export default function Scanner({
     getDevices()
       .then(ds => {
         setDevices(ds)
-        setSelectedDevice(0)
+        setSelectedDevice(lastDeviceId || ds[0].deviceId)
       })
       .catch(onError)
 
@@ -58,9 +60,12 @@ export default function Scanner({
   }, [preview])
 
   useEffect(() => {
-    if (selectedDevice == undefined || selectedDevice >= devices.length) return
+    if (selectedDevice == undefined) return
+    const selectedDeviceIndex = devices.findIndex(i => i.deviceId == selectedDevice)
+    if(selectedDeviceIndex < 0) return
 
-    const selected = devices[selectedDevice]
+    setLastDeviceId(selectedDevice)
+    const selected = devices[selectedDeviceIndex]
     getUserMedia(selected.deviceId)
       .then(s => {
         if (!preview.current) return
@@ -102,16 +107,13 @@ export default function Scanner({
       }} />
     {devices.length > 1 && <select
       value={selectedDevice}
-      onChange={e => {
-        const v = parseInt(e.target.value)
-        setSelectedDevice(Number.isNaN(v) ? undefined : v)
-      }}
+      onChange={e => setSelectedDevice(e.target.value)}
       style={{
         width: '100%',
         marginTop: '8px',
         fontSize: '1rem',
       }}>
-      {devices.map((v, i) => <option key={i} value={i}>{v.label}</option>)}
+      {devices.map((v, i) => <option key={i} value={v.deviceId}>{v.label}</option>)}
     </select>}
   </div>
 }

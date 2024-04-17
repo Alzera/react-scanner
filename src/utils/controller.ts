@@ -43,16 +43,12 @@ export const releaseStream = (
   }
 }
 
-export const getDevices = async () => {
-  return navigator.mediaDevices
-    .enumerateDevices()
-    .then(ds => ds.filter((d) => d.kind === 'videoinput'))
-}
+export const getDevices = () => navigator.mediaDevices
+  .enumerateDevices()
+  .then(ds => ds.filter((d) => d.kind === 'videoinput'))
 
-export const getUserMedia = async (deviceId: string) => {
-  return navigator.mediaDevices
-    .getUserMedia({
-      audio: false,
-      video: { deviceId }
-    })
-}
+export const getUserMedia = (deviceId: string) => navigator.mediaDevices
+  .getUserMedia({
+    audio: false,
+    video: { deviceId },
+  })

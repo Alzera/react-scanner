@@ -13,13 +13,13 @@ export default defineConfig({
   ],
   build: {
     lib: {
+      name: 'BarcodeScanner',
       entry: {
         'scanner': resolve(__dirname, 'src/scanner.tsx'),
         'drop-zone': resolve(__dirname, 'src/drop-zone.tsx'),
         'barcode-scanner': resolve(__dirname, 'src/barcode-scanner.tsx'),
         'index': resolve(__dirname, 'src/index.ts'),
       },
-      name: 'BarcodeScanner',
     },
     rollupOptions: {
       external: [
