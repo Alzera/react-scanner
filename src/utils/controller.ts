@@ -1,4 +1,4 @@
-import { eventOn, videoReady } from "."
+import { eventOn, videoReady, requestCameraPermission } from "."
 import HTMLVideoElementExtended from "../types/html-video-element"
 
 export const handleStream = async (
@@ -43,12 +43,9 @@ export const releaseStream = (
   }
 }
 
-export const getDevices = () => navigator.mediaDevices
-  .enumerateDevices()
+export const getDevices = () => requestCameraPermission()
+  .then(navigator.mediaDevices.enumerateDevices)
   .then(ds => ds.filter((d) => d.kind === 'videoinput'))
 
 export const getUserMedia = (deviceId: string) => navigator.mediaDevices
-  .getUserMedia({
-    audio: false,
-    video: { deviceId },
-  })
+  .getUserMedia({ audio: false, video: { deviceId } })
