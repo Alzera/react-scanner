@@ -1,6 +1,6 @@
 {
   "name": "@alzera/react-scanner",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "Barcode scanner component for React apps",
   "license": "MIT",
   "author": "Alzera Cita <alzeracita23@gmail.com>",
@@ -31,20 +31,20 @@
     "analyze": "npx vite-bundle-visualizer"
   },
   "devDependencies": {
-    "@types/node": "^20.11.30",
-    "@types/react": "^18.2.64",
-    "@types/react-dom": "^18.2.21",
-    "@typescript-eslint/eslint-plugin": "^7.1.1",
-    "@typescript-eslint/parser": "^7.1.1",
+    "@types/node": "^20.12.7",
+    "@types/react": "^18.2.79",
+    "@types/react-dom": "^18.2.25",
+    "@typescript-eslint/eslint-plugin": "^7.7.0",
+    "@typescript-eslint/parser": "^7.7.0",
     "@vitejs/plugin-react": "^4.2.1",
-    "barcode-detector": "^2.2.4",
+    "barcode-detector": "^2.2.5",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
-    "typescript": "^5.2.2",
-    "vite": "^5.1.6",
-    "vite-plugin-dts": "^3.7.3",
-    "webrtc-adapter": "^8.2.3"
+    "typescript": "^5.4.5",
+    "vite": "^5.2.9",
+    "vite-plugin-dts": "^3.8.3",
+    "webrtc-adapter": "^9.0.1"
   },
   "peerDependencies": {
     "react": "^18.2.0",

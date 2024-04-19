@@ -44,7 +44,7 @@ export const releaseStream = (
 }
 
 export const getDevices = () => requestCameraPermission()
-  .then(navigator.mediaDevices.enumerateDevices)
+  .then(_ => navigator.mediaDevices.enumerateDevices())
   .then(ds => ds.filter((d) => d.kind === 'videoinput'))
 
 export const getUserMedia = (deviceId: string) => navigator.mediaDevices
