@@ -28,7 +28,3 @@ export const videoReady = (preview: HTMLVideoElement, delay: number) => new Prom
   }
   setTimeout(check, delay)
 })
-
-export const requestCameraPermission = () => navigator.mediaDevices
-  .getUserMedia({ audio: false, video: true })
-  .then(s => s.getTracks().forEach(i => i.stop()))
