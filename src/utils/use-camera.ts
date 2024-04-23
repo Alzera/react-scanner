@@ -6,6 +6,7 @@ import { useLocalStorage } from "./use-local-storage"
 interface HTMLVideoElementExtended extends HTMLVideoElement {
   mozSrcObject?: MediaStream
 }
+
 interface MediaTrackCapabilities {
   aspectRatio?: DoubleRange;
   autoGainControl?: boolean[];
@@ -73,8 +74,7 @@ const handleStream = async (
 
   await timeout(500)
   const [track] = stream.getVideoTracks()
-  const capabilities: Partial<MediaTrackCapabilities> = track?.getCapabilities?.() ?? {}
-  return capabilities
+  return track?.getCapabilities?.() ?? {}
 }
 
 const requestCameraPermission = () => navigator.mediaDevices
@@ -125,10 +125,8 @@ export const useCamera = (
     setCameraState(CameraState.idle)
   }
 
-  const toggleTorch = async (force?: boolean) => {
+  const setTorch = async (target: boolean) => {
     if(!stream.current || !capabilities.current?.torch) return
-    const target = force ?? !torch.current
-    
     if(target == torch.current) return
 
     const [track] = stream.current.getVideoTracks()
@@ -196,7 +194,8 @@ export const useCamera = (
     devices,
     selectedDevice, 
     setSelectedDevice,
-    toggleTorch,
+    torch,
+    setTorch,
   }
 }
   
