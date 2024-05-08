@@ -154,11 +154,11 @@ The `useCamera` hook is designed to facilitate easy to use camera.
 | -------- | ------- | ------- |
 | capabilities | React.MutableRefObject<MediaTrackCapabilities \| undefined> | Selected camera capabilities. |
 | cameraState | CameraState | Reflect the current camera state, `starting, display, stopping, idle`. |
-| preview | React.RefObject<HTMLVideoElement> | Reference object for video element. |
+| preview | React.RefObject\<HTMLVideoElement> | Reference object for video element. |
 | devices | MediaDeviceInfo[] | Reflect available devices options. |
 | selectedDevice | string \| undefined | State of selected device. |
 | setSelectedDevice | React.Dispatch<React.SetStateAction<string \| undefined>>> | Function to change selected device. |
-| torch | React.MutableRefObject<boolean> | State of torch. |
+| torch | React.MutableRefObject\<boolean> | State of torch. |
 | setTorch | (target: boolean) => Promise | Function to change torch state. |
 
 ## Contributing
