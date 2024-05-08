@@ -10,6 +10,7 @@
 -   **Simplicity:** Easy-to-use API designed for developers of all skill levels.
 -   **Legacy:** Support image input as camera fallback.
 -   **Customizable:** Tailor the scanner's appearance to suit your application's needs.
+-   **Low-level API:** Expose low-level API to be able to create your own layout.
 
 ## Installation
 
@@ -118,6 +119,47 @@ Simple component wrapper for barcode-detector library.
 | decoderOptions | BarcodeDetectorOptions | Exposed BarcodeScanner config, more on [here](https://github.com/Sec-ant/barcode-detector). |
 | style | React.CSSProperties | Apply custom styles to the scanner component. |
 | className | string | Add custom class names to the scanner component. |
+
+## API
+
+### useDecoder
+
+The `useDecoder` hook is designed to facilitate barcode detection, returning a ref to a decoder function that can be used to decode barcodes from images.
+
+#### Parameter
+
+| Name    | Type | Description |
+| -------- | ------- | ------- |
+| opts | { formats: string[] } | Possible barcode format, `"aztec", "code_128", "code_39", "code_93", "codabar", "data_matrix", "ean_13", "ean_8", "itf", "pdf417", "qr_code", "unknown", "upc_a", "upc_e"` |
+
+#### Return
+
+| Type | Description |
+| ------- | ------- |
+| (imageData: ImageBitmapSourceWebCodecs) => Promise<string \| null> | Function that take CanvasImageSourceWebCodecs, Blob or ImageData to be processed and return the decoded string or null if failed |
+
+### useCamera
+
+The `useCamera` hook is designed to facilitate easy to use camera.
+
+#### Parameter
+
+| Name    | Type | Description |
+| -------- | ------- | ------- |
+| onError | (error: any) => void | Callback function triggered when an error occurs during scanning. |
+
+#### Return
+
+| Name    | Type | Description |
+| -------- | ------- | ------- |
+| capabilities | React.MutableRefObject<MediaTrackCapabilities \| undefined> | Selected camera capabilities. |
+| cameraState | CameraState | Reflect the current camera state, `starting, display, stopping, idle`. |
+| preview | React.RefObject<HTMLVideoElement> | Reference object for video element. |
+| devices | MediaDeviceInfo[] | Reflect available devices options. |
+| selectedDevice | string \| undefined | State of selected device. |
+| setSelectedDevice | React.Dispatch<React.SetStateAction<string \| undefined>>> | Function to change selected device. |
+| torch | React.MutableRefObject<boolean> | State of torch. |
+| setTorch | (target: boolean) => Promise | Function to change torch state. |
 
 ## Contributing
 
