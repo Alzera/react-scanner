@@ -45,40 +45,6 @@ export default function Scanner({
     }
   }, [])
 
-  // const [track] = stream.getVideoTracks()
-  // const capabilities: Partial<MediaTrackCapabilities> = track?.getCapabilities?.() ?? {}
-  // let isTorchOn = false
-  // if (torch && capabilities.torch) {
-  //   await track.applyConstraints({ advanced: [{ torch: true }] })
-  //   isTorchOn = true
-  // }
-
-
-
-  // videoEl.src = ''
-  // videoEl.srcObject = null
-  // videoEl.load()
-  // await eventOn(videoEl, 'error')
-  // for (const track of stream.getTracks()) {
-  //   isTorchOn ?? (await track.applyConstraints({ advanced: [{ torch: false }] }))
-  //   stream.removeTrack(track)
-  //   track.stop()
-  // }
-
-
-  // //Create image capture object and get camera capabilities
-  // const imageCapture = new ImageCapture(track)
-  // const photoCapabilities = imageCapture.getPhotoCapabilities().then(() => {
-  //   //todo: check if camera has a torch
-  //   //let there be light!
-  //   const btn = document.querySelector('.switch');
-  //   btn.addEventListener('click', function(){
-  //     track.applyConstraints({
-  //       advanced: [{torch: true}]
-  //     });
-  //   });
-  // });
-
   return <div id="barcode-scanner" className={className} style={style}>
     <div style={{
       aspectRatio: aspectRatio,

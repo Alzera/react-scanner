@@ -1,7 +1,7 @@
 import { BarcodeDetector, type BarcodeDetectorOptions } from "barcode-detector/pure";
 import { useEffect, useRef } from "react";
 
-export type Decoder = (imageData: ImageBitmapSourceWebCodecs) => Promise<string | null | undefined>
+export type Decoder = (imageData: ImageBitmapSourceWebCodecs) => Promise<string | null>
 
 const createDecoder = (opts?: BarcodeDetectorOptions) => {
   const detector = new BarcodeDetector(opts || {
@@ -10,10 +10,12 @@ const createDecoder = (opts?: BarcodeDetectorOptions) => {
   return async (imageData: ImageBitmapSourceWebCodecs) => {
     try {
       const decoded = await detector.detect(imageData);
-      if (decoded.length) return decoded.at(0)?.rawValue
-    } catch (_) {
-      return null
+      if (decoded.length) 
+        return decoded.at(0)?.rawValue ?? null
+    } catch (e) {
+      console.error(e)
     }
+    return null
   }
 }
 

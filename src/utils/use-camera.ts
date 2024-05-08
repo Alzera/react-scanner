@@ -77,6 +77,31 @@ const handleStream = async (
   return track?.getCapabilities?.() ?? {}
 }
 
+const releaseStream = async (
+  preview: HTMLVideoElementExtended | null,
+  stream: MediaStream | null,
+  torch: boolean,
+  onError: ((error: any) => void) | undefined,
+) => {
+  if (preview) {
+    preview.src = ''
+    preview.srcObject = null
+    preview.load()
+
+    await eventOn(preview, 'error')
+  }
+  if (stream) {
+    const constrains: MediaTrackConstraints | null = torch
+      ? { advanced: [{ torch: false } as MediaTrackConstraintSet] }
+      : null
+    for (const track of stream.getVideoTracks()) {
+      if(constrains) await track.applyConstraints(constrains).then(onError)
+      stream.removeTrack(track)
+      track.stop()
+    }
+  }
+}
+
 const requestCameraPermission = () => navigator.mediaDevices
   .getUserMedia({ audio: false, video: true })
   .then(s => s.getTracks().forEach(i => i.stop()))
@@ -105,29 +130,12 @@ export const useCamera = (
 
   const release = async () => {
     setCameraState(CameraState.stopping)
-    if (preview.current) {
-      preview.current.src = ''
-      preview.current.srcObject = null
-      preview.current.load()
-
-      await eventOn(preview.current, 'error')
-    }
-    if (stream.current) {
-      const constrains: MediaTrackConstraints | null = torch.current
-        ? { advanced: [{ torch: false } as MediaTrackConstraintSet] }
-        : null
-      for (const track of stream.current.getVideoTracks()) {
-        if(constrains) await track.applyConstraints(constrains).then(error)
-        stream.current.removeTrack(track)
-        track.stop()
-      }
-    }
+    await releaseStream(preview.current, stream.current, torch.current, error);
     setCameraState(CameraState.idle)
   }
 
   const setTorch = async (target: boolean) => {
-    if(!stream.current || !capabilities.current?.torch) return
-    if(target == torch.current) return
+    if(!stream.current || !capabilities.current?.torch || target == torch.current) return
 
     const [track] = stream.current.getVideoTracks()
     await track.applyConstraints({ advanced: [{ torch: target } as MediaTrackConstraintSet] })
@@ -188,12 +196,14 @@ export const useCamera = (
   }, [selectedDevice])
 
   return {
-    cameraState,
     capabilities,
+    cameraState,
     preview, 
+
     devices,
     selectedDevice, 
     setSelectedDevice,
+
     torch,
     setTorch,
   }
