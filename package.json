@@ -1,6 +1,6 @@
 {
   "name": "@alzera/react-scanner",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Barcode scanner component for React apps",
   "license": "MIT",
   "author": "Alzera Cita <alzeracita23@gmail.com>",
