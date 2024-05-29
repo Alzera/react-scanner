@@ -80,8 +80,6 @@ const handleStream = async (
 const releaseStream = async (
   preview: HTMLVideoElementExtended | null,
   stream: MediaStream | null,
-  torch: boolean,
-  onError: ((error: any) => void) | undefined,
 ) => {
   if (preview) {
     preview.src = ''
@@ -91,11 +89,7 @@ const releaseStream = async (
     await eventOn(preview, 'error')
   }
   if (stream) {
-    const constrains: MediaTrackConstraints | null = torch
-      ? { advanced: [{ torch: false } as MediaTrackConstraintSet] }
-      : null
     for (const track of stream.getVideoTracks()) {
-      if(constrains) await track.applyConstraints(constrains).then(onError)
       stream.removeTrack(track)
       track.stop()
     }
@@ -120,9 +114,9 @@ export const useCamera = (
   const preview = useRef<HTMLVideoElementExtended>(null)
   const stream = useRef<MediaStream | null>(null)
   const isMounted = useRef<boolean>(false)
-  const capabilities = useRef<MediaTrackCapabilities>()
   const torch = useRef<boolean>(false)
 
+  const [capabilities, setCapabilities] = useState<MediaTrackCapabilities>()
   const [cameraState, setCameraState] = useState<CameraState>(CameraState.idle)
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
   const [selectedDevice, setSelectedDevice] = useState<string | undefined>();
@@ -130,12 +124,15 @@ export const useCamera = (
 
   const release = async () => {
     setCameraState(CameraState.stopping)
-    await releaseStream(preview.current, stream.current, torch.current, error);
+    await setTorch(false)
+    await releaseStream(preview.current, stream.current)
+    stream.current = null
+    setCapabilities(undefined)
     setCameraState(CameraState.idle)
   }
 
   const setTorch = async (target: boolean) => {
-    if(!stream.current || !capabilities.current?.torch || target == torch.current) return
+    if(!stream.current || !capabilities?.torch || target == torch.current) return
 
     const [track] = stream.current.getVideoTracks()
     await track.applyConstraints({ advanced: [{ torch: target } as MediaTrackConstraintSet] })
@@ -185,7 +182,7 @@ export const useCamera = (
 
         if (isMounted) {
           handleStream(preview.current, s, selected).then(c => {
-            capabilities.current = c
+            setCapabilities(c)
             setCameraState(CameraState.display)
           })
         } else release()
@@ -196,16 +193,26 @@ export const useCamera = (
   }, [selectedDevice])
 
   return {
-    capabilities,
-    cameraState,
     preview, 
-
-    devices,
-    selectedDevice, 
-    setSelectedDevice,
-
-    torch,
-    setTorch,
+    camera: {
+      capabilities,
+      state: cameraState,
+      get torch() {
+        return torch.current;
+      },
+      set torch(target: boolean) {
+        setTorch(target);
+      },
+    },
+    device: {
+      list: devices,
+      get selected() {
+        return selectedDevice;
+      },
+      set selected(target: string | undefined) {
+        setSelectedDevice(target);
+      },
+    },
   }
 }
   

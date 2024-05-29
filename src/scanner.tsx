@@ -20,13 +20,13 @@ export default function Scanner({
 }: ScannerProps & Styleable) {
   const timeoutId = useRef<NodeJS.Timeout | null>(null)
   const decoder = useDecoder(decoderOptions)
-  const cameraController = useCamera(onError)
+  const controller = useCamera(onError)
 
   function decode() {
-    if (!cameraController.preview.current) return
+    if (!controller.preview.current) return
 
     decoder
-      .current(cameraController.preview.current)
+      .current(controller.preview.current)
       .then((code) => {
         timeoutId.current = setTimeout(decode, delay)
         if (code) onScan(code)
@@ -35,9 +35,9 @@ export default function Scanner({
   }
 
   useEffect(() => {
-    if (cameraController.cameraState != CameraState.display) return
+    if (controller.camera.state != CameraState.display) return
     decode()
-  }, [cameraController.cameraState])
+  }, [controller.camera.state])
 
   useEffect(() => {
     return () => {
@@ -53,7 +53,7 @@ export default function Scanner({
       position: 'relative',
     }}>
       <video
-        ref={cameraController.preview}
+        ref={controller.preview}
         preload="none"
         muted
         playsInline
@@ -65,9 +65,9 @@ export default function Scanner({
           userSelect: 'none',
           pointerEvents: 'none',
         }} />
-      {cameraController.capabilities.current?.torch && <button
+      {controller.camera.capabilities?.torch && <button
         type="button"
-        onClick={() => cameraController.setTorch(!cameraController.torch.current)}
+        onClick={() => controller.camera.torch = !controller.camera.torch}
         style={{
           width: '32px',
           height: '32px',
@@ -75,18 +75,18 @@ export default function Scanner({
           right: '16px',
           bottom: '16px',
         }}>
-        {cameraController.torch.current ? flashlightIcon : flashlightDisabledIcon}
+        {controller.camera.torch ? flashlightIcon : flashlightDisabledIcon}
       </button>}
     </div>
-    {cameraController.devices.length > 1 && <select
-      value={cameraController.selectedDevice}
-      onChange={e => cameraController.setSelectedDevice(e.target.value)}
+    {controller.device.list.length > 1 && <select
+      value={controller.device.selected}
+      onChange={e => controller.device.selected = e.target.value}
       style={{
         width: '100%',
         marginTop: '8px',
         fontSize: '1rem',
       }}>
-      {cameraController.devices.map((v, i) => <option key={i} value={v.deviceId}>{v.label}</option>)}
+      {controller.device.list.map((v, i) => <option key={i} value={v.deviceId}>{v.label}</option>)}
     </select>}
 
   </div>
