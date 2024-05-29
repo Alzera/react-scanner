@@ -153,7 +153,7 @@ The `useCamera` hook is designed to facilitate easy to use camera.
 | Name    | Type | Description |
 | -------- | ------- | ------- |
 | preview | React.RefObject\<HTMLVideoElement> | Reference object for video element. |
-| camera.capabilities | React.MutableRefObject<MediaTrackCapabilities \| undefined> | Selected camera capabilities. |
+| camera.capabilities | MediaTrackCapabilities \| undefined | Selected camera capabilities. |
 | camera.state | CameraState | Reflect the current camera state, `starting, display, stopping, idle`. |
 | camera.torch | boolean | State of torch. |
 | device.list | MediaDeviceInfo[] | Reflect available devices options. |
