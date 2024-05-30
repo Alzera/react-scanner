@@ -19,12 +19,3 @@ export const eventOn = (
 }
 
 export const timeout = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
-
-export const videoReady = (preview: HTMLVideoElement, delay: number) => new Promise((resolve) => {
-  const check = () => {
-    if (preview.readyState === preview.HAVE_ENOUGH_DATA) {
-      resolve(0)
-    } else setTimeout(check, delay)
-  }
-  setTimeout(check, delay)
-})

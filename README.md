@@ -6,11 +6,10 @@
 
 ## Features
 
--   **Lightweight:** Keep your web application nimble with a minimalistic QR code scanning solution.
--   **Simplicity:** Easy-to-use API designed for developers of all skill levels.
+-   **Barcode Formats:** Support many different barcode formats, more on [here](https://github.com/Sec-ant/barcode-detector#barcode-detector).
 -   **Legacy:** Support image input as camera fallback.
--   **Customizable:** Tailor the scanner's appearance to suit your application's needs.
 -   **Low-level API:** Expose low-level API to be able to create your own layout.
+-   **Flash/Torch:** Support handling torch when ever possible.
 
 ## Installation
 
@@ -46,10 +45,9 @@ Combined version of Scanner component and DropZone component, comes with a built
 | -------- | ------- | ------- |
 | onScan* | (value: string) => void | Callback function triggered when a QR code is scanned. Passes the scanned data as an argument. |
 | onError | (error: any) => void | Callback function triggered when an error occurs during scanning. |
-| flipHorizontally | boolean | Flip the video feed horizontally. |
 | delay | number | Set the delay (in milliseconds) between scans. |
 | aspectRatio | string | Set the aspect ratio of the scanner window, using css aspect-ratio. |
-| decoderOptions | BarcodeDetectorOptions | Exposed BarcodeScanner config, more on [here](https://github.com/Sec-ant/barcode-detector). |
+| decoderOptions | BarcodeDetectorOptions | Exposed BarcodeScanner config, more on [here](https://github.com/Sec-ant/barcode-detector#barcode-detector). |
 | switchLabel | (isScanner: boolean) => React.ReactNode | Function to customize the label for the switch component. |
 | dropChildren | React.ReactNode | React node to customize the content of the drop area. |
 | style | React.CSSProperties | Apply custom styles to the scanner component. |
@@ -82,10 +80,9 @@ Simple component wrapper for barcode-detector library.
 | -------- | ------- | ------- |
 | onScan* | (value: string) => void | Callback function triggered when a QR code is scanned. Passes the scanned data as an argument. |
 | onError | (error: any) => void | Callback function triggered when an error occurs during scanning. |
-| flipHorizontally | boolean | Flip the video feed horizontally. |
 | delay | number | Set the delay (in milliseconds) between scans. |
 | aspectRatio | string | Set the aspect ratio of the scanner window, using css aspect-ratio. |
-| decoderOptions | BarcodeDetectorOptions | Exposed BarcodeScanner config, more on [here](https://github.com/Sec-ant/barcode-detector). |
+| decoderOptions | BarcodeDetectorOptions | Exposed BarcodeScanner config, more on [here](https://github.com/Sec-ant/barcode-detector#barcode-detector). |
 | style | React.CSSProperties | Apply custom styles to the scanner component. |
 | className | string | Add custom class names to the scanner component. |
 
@@ -116,7 +113,7 @@ Simple component wrapper for barcode-detector library.
 | onScan* | (value: string) => void | Callback function triggered when a QR code is scanned. Passes the scanned data as an argument. |
 | onError | (error: any) => void | Callback function triggered when an error occurs during scanning. |
 | children | React.ReactNode | React node to customize the content of the drop area. |
-| decoderOptions | BarcodeDetectorOptions | Exposed BarcodeScanner config, more on [here](https://github.com/Sec-ant/barcode-detector). |
+| decoderOptions | BarcodeDetectorOptions | Exposed BarcodeScanner config, more on [here](https://github.com/Sec-ant/barcode-detector#barcode-detector). |
 | style | React.CSSProperties | Apply custom styles to the scanner component. |
 | className | string | Add custom class names to the scanner component. |
 
@@ -130,7 +127,7 @@ The `useDecoder` hook is designed to facilitate barcode detection, returning a r
 
 | Name    | Type | Description |
 | -------- | ------- | ------- |
-| opts | BarcodeDetectorOptions | Exposed BarcodeScanner config, more on [here](https://github.com/Sec-ant/barcode-detector). |
+| opts | BarcodeDetectorOptions | Exposed BarcodeScanner config, more on [here](https://github.com/Sec-ant/barcode-detector#barcode-detector). |
 
 #### Return
 

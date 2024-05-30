@@ -8,7 +8,6 @@ import type Styleable from "./types/styleable";
 export default function BarcodeScanner({
   onScan,
   onError,
-  flipHorizontally,
   delay,
   aspectRatio,
   switchLabel,
@@ -21,6 +20,7 @@ export default function BarcodeScanner({
   dropChildren?: React.ReactNode
 }) {
   const [isScanner, setIsScanner] = useState(true)
+  
   return (
     <div id="barcode-scanner-layout" className={className} style={{
       width: '100%',
@@ -30,7 +30,6 @@ export default function BarcodeScanner({
         ? <Scanner
           onScan={onScan}
           onError={onError}
-          flipHorizontally={flipHorizontally}
           delay={delay}
           aspectRatio={aspectRatio}
           decoderOptions={decoderOptions}

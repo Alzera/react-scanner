@@ -11,7 +11,6 @@ const flashlightDisabledIcon = <svg viewBox="0 0 32 32"><g data-name="Layer 57">
 export default function Scanner({
   onScan,
   onError,
-  flipHorizontally = false,
   delay = 800,
   aspectRatio = '1/1',
   decoderOptions,
@@ -61,7 +60,6 @@ export default function Scanner({
           width: '100%',
           height: '100%',
           objectFit: 'cover',
-          transform: flipHorizontally ? 'scaleX(1)' : 'scaleX(-1)',
           userSelect: 'none',
           pointerEvents: 'none',
         }} />
