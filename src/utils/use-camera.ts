@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react"
 import { eventOn, timeout } from "."
-import shimGetUserMedia from "./shim-get-user-media"
 import { useLocalStorage } from "./use-local-storage"
 
 declare global {
@@ -91,8 +90,7 @@ const requestCameraPermission = async () => {
   }
 }
 
-const getDevices = () => shimGetUserMedia()
-  .then(requestCameraPermission)
+const getDevices = () => requestCameraPermission()
   .then(_ => navigator.mediaDevices.enumerateDevices())
   .then(ds => ds.filter((d) => d.kind === 'videoinput'))
 

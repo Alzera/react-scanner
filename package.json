@@ -45,8 +45,7 @@
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.4.5",
     "vite": "^5.2.9",
-    "vite-plugin-dts": "^3.8.3",
-    "webrtc-adapter": "^9.0.1"
+    "vite-plugin-dts": "^3.8.3"
   },
   "peerDependencies": {
     "react": "^18.2.0",
