@@ -1,4 +1,4 @@
-import { useDecoder } from "./utils/use-decoder"
+import { useDecoder } from "./composables/use-decoder"
 import type ScannerProps from "./types/scanner-props";
 import type Styleable from "./types/styleable";
 

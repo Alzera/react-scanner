@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react"
 
-import { useDecoder } from "./utils/use-decoder"
+import { useDecoder } from "./composables/use-decoder"
+import { useCamera } from "./composables/use-camera";
 import type ScannerProps from "./types/scanner-props"
 import type Styleable from "./types/styleable"
-import { CameraState, useCamera } from "./utils/use-camera";
+import { CameraState } from "./utils/camera";
 
-const flashlightIcon = <svg viewBox="0 0 32 32"><g data-name="Layer 57"><path d="M23.25 12.49 19 8.25a3.08 3.08 0 0 0-4.24 0l-1.41 1.41a3 3 0 0 0-.58 3.41l-8.61 8.61a3 3 0 0 0 0 4.24l1.41 1.41a3 3 0 0 0 4.24 0l8.62-8.62a3 3 0 0 0 3.41-.58l1.41-1.41a3 3 0 0 0 0-4.23Zm-9.19 6.36-1.41 1.41a1 1 0 0 1-1.41-1.41l1.41-1.41a1 1 0 0 1 1.41 1.41Zm7.78-3.54-1.41 1.41a1 1 0 0 1-1.41 0L16.9 14.6l-2.12-2.12a1 1 0 0 1 0-1.41l1.42-1.41a1 1 0 0 1 1.41 0l4.24 4.24a1 1 0 0 1-.01 1.42ZM24 9a1 1 0 0 1-.71-1.71l3-3A1 1 0 0 1 27.7 5.7l-3 3a1 1 0 0 1-.7.3ZM21.13 7.59a1 1 0 0 1-.32-.05 1 1 0 0 1-.62-1.27l.74-2.18a1 1 0 0 1 1.89.65l-.74 2.18a1 1 0 0 1-.95.67ZM25.37 11.88A1 1 0 0 1 25 10l2.12-.89a1 1 0 0 1 .77 1.85l-2.12.89a1 1 0 0 1-.4.03Z" /></g></svg>
-const flashlightDisabledIcon = <svg viewBox="0 0 32 32"><g data-name="Layer 57"><path d="m27.61 21.68-6.93-6.93-1.42 1.41-1 1a1 1 0 0 1 .89.26l1.41 1.41a1 1 0 1 1-1.41 1.41l-1.41-1.41a1 1 0 0 1-.26-.88l-1 1L15 20.4l7 6.94a3 3 0 0 0 4.24 0l1.41-1.42a3 3 0 0 0-.04-4.24ZM7.07 8.71a1 1 0 0 0 1.41-1.42l-3-3a1 1 0 0 0-1.41 1.42ZM9.7 6.91a1 1 0 0 0 .95.68 1 1 0 0 0 .35-.05 1 1 0 0 0 .62-1.27l-.74-2.18A1 1 0 0 0 9 4.73ZM6.41 11.88A1 1 0 0 0 6.79 10l-2.12-.93a1 1 0 0 0-.77 1.85l2.1.88a1 1 0 0 0 .41.08ZM27.71 4.29a1 1 0 0 0-1.41 0l-7 7a3 3 0 0 0-.84-1.67L17 8.25a3.08 3.08 0 0 0-4.24 0l-4.24 4.24a3 3 0 0 0 0 4.24l1.42 1.42a3 3 0 0 0 1.67.83l-7.32 7.31A1 1 0 1 0 5.7 27.7l22-22a1 1 0 0 0 .01-1.41Z" /></g></svg>
+const flashlightIcon = <svg viewBox="0 0 256 256"><path fill="none" d="M0 0h256v256H0z"/><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" d="m96 240 16-80-64-24L160 16l-16 80 64 24L96 240z"/></svg>
+const flashlightDisabledIcon = <svg viewBox="0 0 256 256"><path fill="none" d="M0 0h256v256H0z"/><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" d="m48 40 160 176M163.8 167.4 96 240l16-80-64-24 44.2-47.4M114.1 65.1 160 16l-16 80 64 24-22.3 23.9"/></svg>
 
 export default function Scanner({
   onScan,
@@ -86,6 +87,5 @@ export default function Scanner({
       }}>
       {controller.device.list.map((v, i) => <option key={i} value={v.deviceId}>{v.label}</option>)}
     </select>}
-
   </div>
 }
