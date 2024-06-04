@@ -1,33 +1,46 @@
 import { useEffect, useRef, useState } from "react"
-import { CameraState, releaseStream, handleStream, getDevices, getUserMedia, toggleTorch } from "../utils/camera"
+import { type CameraState, releaseStream, handleStream, getDevices, getUserMedia, toggleTorch } from "../utils/camera"
 import { useLocalStorage } from "./use-local-storage"
 
-// facingMode	'user'|'environment'
-// useLastDeviceId	boolean
+export type CameraController = {
+  readonly preview: React.RefObject<HTMLVideoElement>;
+  readonly camera: {
+      readonly capabilities: MediaTrackCapabilities | undefined;
+      readonly state: CameraState;
+      torch: boolean;
+  };
+  readonly device: {
+    list: MediaDeviceInfo[];
+    selected: string | undefined;
+  };
+}
 
 export const useCamera = (
-  onError?: (error: any) => void,
-) => {
+  enabled: boolean = true,
+  onError: (error: any) => void = console.error,
+  facingMode?: 'user' | 'environment',
+  useLastDeviceId?: boolean,
+): CameraController => {
   const preview = useRef<HTMLVideoElement>(null)
   const stream = useRef<MediaStream | null>(null)
   const isMounted = useRef<boolean>(false)
 
   const [torchState, setTorchState] = useState<boolean>(false)
   const [capabilities, setCapabilities] = useState<MediaTrackCapabilities>()
-  const [cameraState, setCameraState] = useState<CameraState>(CameraState.idle)
+  const [cameraState, setCameraState] = useState<CameraState>("idle")
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
   const [selectedDevice, setSelectedDevice] = useState<string | undefined>();
   const [lastDeviceId, setLastDeviceId] = useLocalStorage<string | null>("last-device-id", null)
 
   const release = async () => {
-    setCameraState(CameraState.stopping)
+    setCameraState("stopping")
 
     await setTorch(false)
     await releaseStream(preview.current, stream.current)
     setCapabilities(undefined)
     stream.current = null
 
-    setCameraState(CameraState.idle)
+    setCameraState("idle")
   }
 
   const setTorch = async (target: boolean) => {
@@ -42,6 +55,22 @@ export const useCamera = (
     onError?.(e)
   }
 
+  const start = () => {
+    setCameraState("starting")
+    getDevices(facingMode)
+      .then(ds => {
+        setDevices(ds)
+        const deviceId = useLastDeviceId ? lastDeviceId : ds[0].deviceId
+        setSelectedDevice(deviceId)
+      })
+      .catch(error)
+  }
+
+  useEffect(() => { 
+    if(enabled) start()
+    else release()
+  }, [enabled])
+
   useEffect(() => {
     isMounted.current = true
 
@@ -52,14 +81,7 @@ export const useCamera = (
   }, [])
 
   useEffect(() => {
-    setCameraState(CameraState.starting)
-    getDevices()
-      .then(ds => {
-        setDevices(ds)
-        setSelectedDevice(lastDeviceId || ds[0].deviceId)
-      })
-      .catch(error)
-
+    if(enabled) start()
     return () => { release() }
   }, [preview])
 
@@ -85,7 +107,7 @@ export const useCamera = (
       .then(c => {
         if (!c) return
         setCapabilities(c)
-        setCameraState(CameraState.display)
+        setCameraState("display")
       })
       .catch(error)
 

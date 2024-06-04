@@ -7,9 +7,9 @@ declare global {
   interface MediaTrackConstraintSet { torch?: ConstrainBoolean }
 }
 
-export enum CameraState {
-  starting, display, stopping, idle,
-}
+export type CameraState = 'starting' | 'display' | 'stopping' | 'idle'
+
+export type CameraFacingMode = 'user' | 'environment'
 
 const videoReady = (preview: HTMLVideoElement, delay: number) => new Promise((resolve) => {
   const check = () => {
@@ -29,6 +29,9 @@ const requestCameraPermission = async () => {
   }
   await getUserMedia(true) .then(s => s.getTracks().forEach(i => i.stop()))
 }
+
+const getFacingModePattern = (facingMode: CameraFacingMode) => 
+  facingMode === 'environment' ? /rear|back|environment/gi : /front|user|face/gi
 
 export const handleStream = async (
   preview: HTMLVideoElement,
@@ -85,9 +88,18 @@ export const getUserMedia = (deviceId: string | boolean) => navigator.mediaDevic
     video: deviceId === true || { deviceId } as MediaTrackConstraints 
   })
 
-export const getDevices = () => requestCameraPermission()
+export const getDevices = (facingMode?: CameraFacingMode) => requestCameraPermission()
   .then(_ => navigator.mediaDevices.enumerateDevices())
-  .then(ds => ds.filter((d) => d.kind === 'videoinput'))
+  .then(ds => {
+    ds = ds.filter(({ kind }) => kind === 'videoinput')
+
+    if(facingMode) {
+      const pattern = getFacingModePattern(facingMode);
+      ds = ds.filter(({ label }) => pattern.test(label))
+    }
+
+    return ds
+  })
 
 export const toggleTorch = async (stream: MediaStream | null, target: boolean) => {
   if (!stream) return

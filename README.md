@@ -143,7 +143,10 @@ The `useCamera` hook is designed to facilitate easy to use camera.
 
 | Name    | Type | Description |
 | -------- | ------- | ------- |
+| enabled | boolean | Enable or disable the camera |
 | onError | (error: any) => void | Callback function triggered when an error occurs during scanning. |
+| facingMode | 'user' \| 'environment' \| undefined | Set the camera facing mode.
+| useLastDeviceId | boolean | Use the last selected device id.
 
 #### Return
 

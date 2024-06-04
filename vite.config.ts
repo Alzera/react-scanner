@@ -15,6 +15,8 @@ export default defineConfig({
     lib: {
       name: 'BarcodeScanner',
       entry: {
+        'use-camera': resolve(__dirname, 'src/composables/use-camera.ts'),
+        'use-decoder': resolve(__dirname, 'src/composables/use-decoder.ts'),
         'scanner': resolve(__dirname, 'src/scanner.tsx'),
         'drop-zone': resolve(__dirname, 'src/drop-zone.tsx'),
         'barcode-scanner': resolve(__dirname, 'src/barcode-scanner.tsx'),

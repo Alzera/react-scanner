@@ -1,10 +1,9 @@
 import { useEffect, useRef } from "react"
 
 import { useDecoder } from "./composables/use-decoder"
-import { useCamera } from "./composables/use-camera";
+import { useCamera } from "./composables/use-camera"
 import type ScannerProps from "./types/scanner-props"
 import type Styleable from "./types/styleable"
-import { CameraState } from "./utils/camera";
 
 const flashlightIcon = <svg viewBox="0 0 256 256"><path fill="none" d="M0 0h256v256H0z"/><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" d="m96 240 16-80-64-24L160 16l-16 80 64 24L96 240z"/></svg>
 const flashlightDisabledIcon = <svg viewBox="0 0 256 256"><path fill="none" d="M0 0h256v256H0z"/><path fill="none" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="16" d="m48 40 160 176M163.8 167.4 96 240l16-80-64-24 44.2-47.4M114.1 65.1 160 16l-16 80 64 24-22.3 23.9"/></svg>
@@ -20,7 +19,7 @@ export default function Scanner({
 }: ScannerProps & Styleable) {
   const timeoutId = useRef<NodeJS.Timeout | null>(null)
   const decoder = useDecoder(decoderOptions)
-  const controller = useCamera(onError)
+  const controller = useCamera(true, onError)
 
   function decode() {
     if (!controller.preview.current) return
@@ -35,7 +34,7 @@ export default function Scanner({
   }
 
   useEffect(() => {
-    if (controller.camera.state != CameraState.display) return
+    if (controller.camera.state != "display") return
     decode()
   }, [controller.camera.state])
 
