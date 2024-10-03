@@ -4,10 +4,12 @@ export const useLocalStorage = <T>(key: string, defaultValue: T) => {
   const [value, setValue] = useState(() => {
     const isLocalStorageAvailable =
       typeof window !== "undefined" && window.localStorage;
-    const saved = isLocalStorageAvailable
-      ? localStorage.getItem(key)
-      : null;
-    return saved ? JSON.parse(saved) : defaultValue;
+    const saved = isLocalStorageAvailable ? localStorage.getItem(key) : null;
+    try {
+      return saved ? JSON.parse(saved) : defaultValue;
+    } catch (e) {
+      return typeof defaultValue === typeof saved ? saved : defaultValue;
+    }
   });
 
   useEffect(() => {

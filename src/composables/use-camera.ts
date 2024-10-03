@@ -1,136 +1,225 @@
-import { useEffect, useRef, useState } from "react"
-import { type CameraState, releaseStream, handleStream, getDevices, getUserMedia, toggleTorch } from "../utils/camera"
-import { useLocalStorage } from "./use-local-storage"
+import { useEffect, useRef, useState } from "react";
+import {
+  type CameraState,
+  releaseStream,
+  handleStream,
+  getDevices,
+  getUserMedia,
+  toggleTorch,
+} from "../utils/camera";
+import { useLocalStorage } from "./use-local-storage";
+import { useDocumentVisibility } from "./use-document-visibility";
+import { useImmediateState } from "./use-immediate-state";
 
 export type CameraController = {
-  readonly preview: React.RefObject<HTMLVideoElement>;
+  readonly video: React.MutableRefObject<HTMLVideoElement | null>;
   readonly camera: {
-      readonly capabilities: MediaTrackCapabilities | undefined;
-      readonly state: CameraState;
-      torch: boolean;
+    readonly capabilities: MediaTrackCapabilities | undefined;
+    readonly state: CameraState;
+    stream: MediaStream | undefined;
+    torch: boolean;
   };
   readonly device: {
     list: MediaDeviceInfo[];
-    selected: string | undefined;
+    selected: MediaDeviceInfo | undefined;
+    lastSelected: string | undefined;
   };
-}
+};
 
-export const useCamera = (
-  enabled: boolean = true,
-  onError: (error: any) => void = console.error,
-  facingMode?: 'user' | 'environment',
-  useLastDeviceId?: boolean,
-): CameraController => {
-  const preview = useRef<HTMLVideoElement>(null)
-  const stream = useRef<MediaStream | null>(null)
-  const isMounted = useRef<boolean>(false)
+export type UseCameraParameters = {
+  onError?: (error: any) => void;
+  useLastDeviceId?: boolean;
+  autoStart?: boolean;
+  autoPause?: boolean;
+  constraints?: {
+    audio?: boolean;
+    video?: boolean;
+  };
+};
 
-  const [torchState, setTorchState] = useState<boolean>(false)
-  const [capabilities, setCapabilities] = useState<MediaTrackCapabilities>()
-  const [cameraState, setCameraState] = useState<CameraState>("idle")
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>([])
-  const [selectedDevice, setSelectedDevice] = useState<string | undefined>();
-  const [lastDeviceId, setLastDeviceId] = useLocalStorage<string | null>("last-device-id", null)
+export const useCamera = ({
+  onError = console.error,
+  useLastDeviceId = true,
+  autoStart = true,
+  autoPause = false,
+  constraints = {
+    audio: false,
+    video: true,
+  },
+}: UseCameraParameters = {}): CameraController => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [cameraState, setCameraState] = useState<CameraState>("idle");
 
-  const release = async () => {
-    setCameraState("stopping")
+  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
+  const [selectedDevice, setSelectedDevice] = useState<MediaDeviceInfo>();
+  const [stream, setStream] = useImmediateState<MediaStream>();
+  const [capabilities, setCapabilities] = useState<MediaTrackCapabilities>();
 
-    await setTorch(false)
-    await releaseStream(preview.current, stream.current)
-    setCapabilities(undefined)
-    stream.current = null
+  const [torchState, setTorchState] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
+  const documentVisibility = useDocumentVisibility();
+  const [lastDeviceId, setLastDeviceId] = useLocalStorage<string | null>(
+    "last-device-id",
+    null
+  );
 
-    setCameraState("idle")
-  }
+  useEffect(() => {
+    setIsMounted(true);
+    return () => {
+      setIsMounted(false);
+      stop();
+    };
+  }, []);
 
-  const setTorch = async (target: boolean) => {
-    if (!capabilities?.torch || target == torchState) return
+  const stop = async () => {
+    setCameraState("stopping");
 
-    await toggleTorch(stream.current, target).catch(_ => {})
-    setTorchState(target)
-  }
+    await setTorch(false);
+    await releaseStream(videoRef.current, stream.current);
+    setCapabilities(undefined);
+    setStream(undefined);
+
+    setCameraState("idle");
+  };
 
   const error = async (e: any) => {
-    await release().catch(_ => {})
-    onError?.(e)
-  }
+    await stop().catch(onError);
+    onError(e);
+  };
 
-  const start = () => {
-    setCameraState("starting")
-    getDevices(facingMode)
-      .then(ds => {
-        setDevices(ds)
-        const deviceId = useLastDeviceId ? lastDeviceId : ds[0].deviceId
-        setSelectedDevice(deviceId)
-      })
-      .catch(error)
-  }
+  const start = async (device: MediaDeviceInfo) => {
+    try {
+      if (!videoRef.current) throw new Error("Video element is not mounted");
 
-  useEffect(() => { 
-    if(enabled) start()
-    else release()
-  }, [enabled])
+      const mediaStream = await getUserMedia(constraints, device.deviceId);
+      const cap = await (isMounted
+        ? handleStream(videoRef.current, mediaStream, device)
+        : stop());
+      if (!cap) throw new Error("Could not get capabilities");
 
-  useEffect(() => {
-    isMounted.current = true
-
-    return () => {
-      isMounted.current = false
-      release()
+      setCapabilities(cap);
+      setStream(mediaStream);
+      setCameraState("display");
+    } catch (e) {
+      await stop();
+      error(e);
     }
-  }, [])
+  };
+
+  const setTorch = async (target: boolean) => {
+    if (!capabilities?.torch || target === torchState) return;
+    try {
+      await toggleTorch(stream.current, target);
+      setTorchState(target);
+    } catch (e) {
+      await stop();
+      error(e);
+    }
+  };
 
   useEffect(() => {
-    if(enabled) start()
-    return () => { release() }
-  }, [preview])
+    const initDevices = async () => {
+      try {
+        if (!videoRef.current) throw new Error("Video element is not mounted");
+
+        setCameraState("starting");
+        const availableDevices = await getDevices(constraints);
+        setDevices(availableDevices);
+
+        if (autoStart && availableDevices.length) {
+          let device = availableDevices[0];
+          if (useLastDeviceId && lastDeviceId) {
+            const foundDevice = availableDevices.find(
+              (d) => d.deviceId === lastDeviceId
+            );
+            if (foundDevice) device = foundDevice;
+          }
+          setSelectedDevice(device);
+        }
+      } catch (e) {
+        await stop();
+        error(e);
+      }
+    };
+    initDevices();
+  }, [videoRef]);
 
   useEffect(() => {
-    if (selectedDevice == undefined) return
+    if (!selectedDevice) return;
+    const startSelectedDevice = async () => {
+      try {
+        const deviceIndex = devices.findIndex(
+          (d) => d.deviceId === selectedDevice.deviceId
+        );
+        if (deviceIndex < 0) return;
 
-    const index = devices.findIndex(i => i.deviceId == selectedDevice)
-    if (index < 0) return
+        setLastDeviceId(selectedDevice.deviceId);
 
-    setLastDeviceId(selectedDevice)
-    const selected = devices[index]
+        await stop();
+        await start(selectedDevice);
+      } catch (e) {
+        await stop();
+        error(e);
+      }
+    };
+    startSelectedDevice();
+  }, [selectedDevice]);
 
-    release()
-      .then(_ => getUserMedia(selected.deviceId))
-      .then<MediaTrackCapabilities | void>(value => {
-        if (!preview.current) return Promise.resolve()
-        stream.current = value
-
-        return isMounted
-          ? handleStream(preview.current, value, selected)
-          : release()
-      })
-      .then(c => {
-        if (!c) return
-        setCapabilities(c)
-        setCameraState("display")
-      })
-      .catch(error)
-
-    return () => { release() }
-  }, [selectedDevice])
+  useEffect(() => {
+    if (autoPause && !documentVisibility) {
+      stop();
+    } else if (selectedDevice) {
+      const deviceIndex = devices.findIndex(
+        (d) => d.deviceId === selectedDevice.deviceId
+      );
+      if (deviceIndex >= 0) start(devices[deviceIndex]);
+    }
+  }, [documentVisibility]);
 
   return {
-    get preview() { return preview },
+    get video() {
+      return videoRef;
+    },
     get camera() {
       return {
-        get capabilities() { return capabilities },
-        get state() { return cameraState },
-        get torch() { return torchState },
-        set torch(target: boolean) { setTorch(target) },
-      }
+        get capabilities() {
+          return capabilities;
+        },
+        get state() {
+          return cameraState;
+        },
+        get torch() {
+          return torchState;
+        },
+        set torch(target: boolean) {
+          setTorch(target);
+        },
+        get stream() {
+          return stream.current;
+        },
+      };
     },
     get device() {
       return {
-        get list() { return devices },
-        set list(target: MediaDeviceInfo[]) { setDevices(target) },
-        get selected() { return selectedDevice },
-        set selected(target: string | undefined) { setSelectedDevice(target) },
-      }
+        get list() {
+          return devices;
+        },
+        set list(target: MediaDeviceInfo[]) {
+          setDevices(target);
+        },
+        get selected() {
+          return selectedDevice;
+        },
+        set selected(target: MediaDeviceInfo | undefined) {
+          setSelectedDevice(target);
+        },
+        get lastSelected() {
+          return lastDeviceId;
+        },
+        set lastSelected(target: string | undefined) {
+          setLastDeviceId(target);
+        },
+      };
     },
-  }
-}
+  };
+};

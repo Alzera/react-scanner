@@ -143,10 +143,10 @@ The `useCamera` hook is designed to facilitate easy to use camera.
 
 | Name    | Type | Description |
 | -------- | ------- | ------- |
-| enabled | boolean | Enable or disable the camera |
+| initialEnabled | boolean | Set the initial camera state. |
+| facingMode | 'user' \| 'environment' \| undefined | Set the camera facing mode. |
+| useLastDeviceId | boolean | Use the last selected device id. |
 | onError | (error: any) => void | Callback function triggered when an error occurs during scanning. |
-| facingMode | 'user' \| 'environment' \| undefined | Set the camera facing mode.
-| useLastDeviceId | boolean | Use the last selected device id.
 
 #### Return
 
@@ -158,6 +158,7 @@ The `useCamera` hook is designed to facilitate easy to use camera.
 | camera.torch | boolean | State of torch. |
 | device.list | MediaDeviceInfo[] | Reflect available devices options. |
 | device.selected | string \| undefined | State of selected device. |
+| device.lastSelected | string \| undefined | State of last selected device.
 
 ## Contributing
 

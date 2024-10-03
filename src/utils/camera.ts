@@ -1,109 +1,238 @@
-import { eventOn, timeout } from "."
+import { eventOn, timeout } from ".";
 
 declare global {
-  interface Navigator { mozGetUserMedia: any }
-  interface HTMLVideoElement { mozSrcObject?: MediaStream }
-  interface MediaTrackCapabilities { torch?: boolean }
-  interface MediaTrackConstraintSet { torch?: ConstrainBoolean }
+  interface Navigator {
+    mozGetUserMedia: any;
+  }
+  interface HTMLVideoElement {
+    mozSrcObject?: MediaStream;
+  }
+  interface MediaTrackCapabilities {
+    torch?: boolean;
+  }
+  interface MediaTrackConstraintSet {
+    torch?: ConstrainBoolean;
+  }
 }
 
-export type CameraState = 'starting' | 'display' | 'stopping' | 'idle'
+/**
+ * Camera state
+ */
+export type CameraState = "starting" | "display" | "stopping" | "idle";
 
-export type CameraFacingMode = 'user' | 'environment'
+/**
+ * Wait for video to be ready
+ * @param video <video /> element
+ * @param delay delay in milliseconds
+ * @returns Promise that resolves when video is ready
+ */
+const videoReady = (video: HTMLVideoElement, delay: number) =>
+  new Promise((resolve) => {
+    const check = () => {
+      if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        resolve(0);
+      } else setTimeout(check, delay);
+    };
+    setTimeout(check, delay);
+  });
 
-const videoReady = (preview: HTMLVideoElement, delay: number) => new Promise((resolve) => {
-  const check = () => {
-    if (preview.readyState === preview.HAVE_ENOUGH_DATA) {
-      resolve(0)
-    } else setTimeout(check, delay)
-  }
-  setTimeout(check, delay)
-})
-
-const requestCameraPermission = async () => {
+/**
+ * Request camera permission
+ * @param constraints <video /> constraints
+ * @returns Promise that resolves when camera permission is granted and throws an error if permission is denied
+ */
+const requestCameraPermission = async (constraints: MediaStreamConstraints) => {
   if (!navigator.mozGetUserMedia) {
     const permissionStatus = await navigator.permissions
-      .query({ name: 'camera' as any })
-      .catch(() => ({ state: 'prompt' }))
-    if (permissionStatus.state === 'granted') return
+      .query({ name: "camera" as any })
+      .catch(() => ({ state: "prompt" }));
+    if (permissionStatus.state === "granted") return;
   }
-  await getUserMedia(true) .then(s => s.getTracks().forEach(i => i.stop()))
+  await getUserMedia(constraints).then((s) =>
+    s.getTracks().forEach((i) => i.stop())
+  );
+};
+
+/**
+ * Environment camera keywords
+ */
+const environmentCameraKeywords: string[] = [
+  "rear",
+  "back",
+  "rück",
+  "arrière",
+  "trasera",
+  "trás",
+  "traseira",
+  "posteriore",
+  "后面",
+  "後面",
+  "背面",
+  "后置", // alternative
+  "後置", // alternative
+  "背置", // alternative
+  "задней",
+  "الخلفية",
+  "후",
+  "arka",
+  "achterzijde",
+  "หลัง",
+  "baksidan",
+  "bagside",
+  "sau",
+  "bak",
+  "tylny",
+  "takakamera",
+  "belakang",
+  "אחורית",
+  "πίσω",
+  "spate",
+  "hátsó",
+  "zadní",
+  "darrere",
+  "zadná",
+  "задня",
+  "stražnja",
+  "belakang",
+  "बैक",
+];
+
+/**
+ * Check if a camera label is an environment camera
+ * @param label camera label
+ * @returns true if the camera label is an environment camera
+ */
+function isEnvironmentCamera(label: string): boolean {
+  const lowercaseLabel = label.toLowerCase();
+
+  return environmentCameraKeywords.some((keyword) => {
+    return lowercaseLabel.includes(keyword);
+  });
 }
 
-const getFacingModePattern = (facingMode: CameraFacingMode) => 
-  facingMode === 'environment' ? /rear|back|environment/gi : /front|user|face/gi
-
+/**
+ * Attach stream to video element and get capabilities
+ * @param video <video /> element
+ * @param stream stream of camera device
+ * @param info device info
+ * @returns Promise that resolves when stream is properly handled and returns camera capabilities
+ */
 export const handleStream = async (
-  preview: HTMLVideoElement,
+  video: HTMLVideoElement,
   stream: MediaStream,
   info: MediaDeviceInfo
 ) => {
-  if (preview.srcObject !== undefined) {
-    preview.srcObject = stream
-  } else if (preview.mozSrcObject !== undefined) {
-    preview.mozSrcObject = stream
+  const [track] = stream.getVideoTracks();
+
+  const settings = track.getSettings();
+  const isEnvironment =
+    (settings != null && settings.facingMode === "environment") ||
+    isEnvironmentCamera(info.label);
+  video.style.transform = isEnvironment ? "" : "scaleX(-1)";
+
+  if (video.srcObject !== undefined) {
+    video.srcObject = stream;
+  } else if (video.mozSrcObject !== undefined) {
+    video.mozSrcObject = stream;
   } else if (window.URL.createObjectURL) {
-    preview.src = window.URL.createObjectURL(stream as any)
+    video.src = window.URL.createObjectURL(stream as any);
   } else if (window.webkitURL) {
-    preview.src = window.webkitURL.createObjectURL(stream as any)
+    video.src = window.webkitURL.createObjectURL(stream as any);
   } else {
-    preview.src = stream as any
+    video.src = stream as any;
   }
 
-  await eventOn(preview, 'canplay')
+  await eventOn(video, "canplay");
 
-  const isFrontCamera = /front|user|face/gi.test(info.label)
-  preview.style.transform = isFrontCamera ? 'scaleX(-1)' : ''
+  await video.play();
+  await videoReady(video, 750);
 
-  await preview.play()
-  await videoReady(preview, 750)
+  await timeout(500);
 
-  await timeout(500)
-  const [track] = stream.getVideoTracks()
-  return track?.getCapabilities?.() ?? {}
-}
+  return track?.getCapabilities?.() ?? {};
+};
 
+/**
+ * Release stream
+ * @param video <video /> element
+ * @param stream stream of camera device
+ * @returns Promise that resolves when stream is properly released
+ */
 export const releaseStream = async (
-  preview: HTMLVideoElement | null,
-  stream: MediaStream | null,
+  video: HTMLVideoElement | null,
+  stream: MediaStream | undefined
 ) => {
-  if (preview) {
-    preview.src = ''
-    preview.srcObject = null
-    preview.load()
+  console.log("Releasing element", video);
+  if (video) {
+    video.src = "";
+    video.srcObject = null;
+    video.load();
 
-    await eventOn(preview, 'error')
+    await eventOn(video, "error");
   }
+  console.log("Releasing stream", stream);
   if (stream) {
     for (const track of stream.getVideoTracks()) {
-      stream.removeTrack(track)
-      track.stop()
+      stream.removeTrack(track);
+      track.stop();
     }
   }
-}
+};
 
-export const getUserMedia = (deviceId: string | boolean) => navigator.mediaDevices
-  .getUserMedia({ 
-    audio: false, 
-    video: deviceId === true || { deviceId } as MediaTrackConstraints 
-  })
+const defaultConstraints = { video: true, audio: false };
 
-export const getDevices = (facingMode?: CameraFacingMode) => requestCameraPermission()
-  .then(_ => navigator.mediaDevices.enumerateDevices())
-  .then(ds => {
-    ds = ds.filter(({ kind }) => kind === 'videoinput')
+/**
+ * Wrapper around navigator.mediaDevices.getUserMedia
+ * @param constraints constraints for getUserMedia
+ * @param deviceId device id
+ * @returns Promise that resolves when camera is ready
+ */
+export const getUserMedia = (
+  constraints: MediaStreamConstraints,
+  deviceId?: string
+) => {
+  const c = { ...defaultConstraints, ...constraints } as MediaStreamConstraints;
+  if (deviceId) c.video = { deviceId };
+  return navigator.mediaDevices.getUserMedia(c);
+};
 
-    if(facingMode) {
-      const pattern = getFacingModePattern(facingMode);
-      ds = ds.filter(({ label }) => pattern.test(label))
-    }
+/**
+ * Get camera devices
+ * @param constraints constraints for getUserMedia
+ * @returns Promise that resolves when camera devices are ready
+ */
+export const getDevices = (constraints: MediaStreamConstraints) =>
+  requestCameraPermission(constraints)
+    .then((_) => navigator.mediaDevices.enumerateDevices())
+    .then((ds) => {
+      ds = ds.filter(({ kind }) => kind === "videoinput");
 
-    return ds
-  })
+      if (
+        typeof constraints.video === "object" &&
+        typeof constraints.video.facingMode === "string"
+      ) {
+        const pattern =
+          constraints.video.facingMode === "user"
+            ? (label: string) => !isEnvironmentCamera(label)
+            : isEnvironmentCamera;
+        ds = ds.filter(({ label }) => pattern(label));
+      }
 
-export const toggleTorch = async (stream: MediaStream | null, target: boolean) => {
-  if (!stream) return
+      return ds;
+    });
 
-  const [track] = stream.getVideoTracks()
-  await track.applyConstraints({ advanced: [{ torch: target }] })
-}
+/**
+ * Toggle camera torch
+ * @param stream stream of camera device
+ * @param target new torch state
+ * @returns Promise that resolves when constraints are applied
+ */
+export const toggleTorch = async (
+  stream: MediaStream | undefined,
+  target: boolean
+) => {
+  if (!stream) return;
+
+  const [track] = stream.getVideoTracks();
+  await track.applyConstraints({ advanced: [{ torch: target }] });
+};
