@@ -162,7 +162,6 @@ export const releaseStream = async (
   video: HTMLVideoElement | null,
   stream: MediaStream | undefined
 ) => {
-  console.log("Releasing element", video);
   if (video) {
     video.src = "";
     video.srcObject = null;
@@ -170,7 +169,6 @@ export const releaseStream = async (
 
     await eventOn(video, "error");
   }
-  console.log("Releasing stream", stream);
   if (stream) {
     for (const track of stream.getVideoTracks()) {
       stream.removeTrack(track);
