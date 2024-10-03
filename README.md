@@ -143,22 +143,24 @@ The `useCamera` hook is designed to facilitate easy to use camera.
 
 | Name    | Type | Description |
 | -------- | ------- | ------- |
-| initialEnabled | boolean | Set the initial camera state. |
-| facingMode | 'user' \| 'environment' \| undefined | Set the camera facing mode. |
-| useLastDeviceId | boolean | Use the last selected device id. |
 | onError | (error: any) => void | Callback function triggered when an error occurs during scanning. |
+| useLastDeviceId | boolean | Use the last selected device id. |
+| autoStart | boolean | Set the initial camera state. |
+| autoPause | boolean | Set if the camera should be paused when the component is not visible. |
+| constraints.audio | boolean | Set if the camera should have audio enabled. |
+| constraints.video | boolean | Set if the camera should have video enabled. |
 
 #### Return
 
 | Name    | Type | Description |
 | -------- | ------- | ------- |
-| preview | React.RefObject\<HTMLVideoElement> | Reference object for video element. |
+| video | React.RefObject\<HTMLVideoElement> | Reference object for video element. |
 | camera.capabilities | MediaTrackCapabilities \| undefined | Selected camera capabilities. |
 | camera.state | CameraState | Reflect the current camera state, `starting, display, stopping, idle`. |
 | camera.torch | boolean | State of torch. |
 | device.list | MediaDeviceInfo[] | Reflect available devices options. |
 | device.selected | string \| undefined | State of selected device. |
-| device.lastSelected | string \| undefined | State of last selected device.
+| device.lastSelected | string \| undefined | State of last selected device. |
 
 ## Contributing
 
