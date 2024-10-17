@@ -102,7 +102,7 @@ const environmentCameraKeywords: string[] = [
  * @param label camera label
  * @returns true if the camera label is an environment camera
  */
-function isEnvironmentCamera(label: string): boolean {
+export function isEnvironmentCamera(label: string): boolean {
   const lowercaseLabel = label.toLowerCase();
 
   return environmentCameraKeywords.some((keyword) => {

@@ -6,6 +6,7 @@ import {
   getDevices,
   getUserMedia,
   toggleTorch,
+  isEnvironmentCamera,
 } from "../utils/camera";
 import { useLocalStorage } from "./use-local-storage";
 import { useDocumentVisibility } from "./use-document-visibility";
@@ -35,6 +36,7 @@ export type UseCameraParameters = {
     audio?: boolean;
     video?: boolean;
   };
+  preferredFacing?: "user" | "environment";
 };
 
 export const useCamera = ({
@@ -46,6 +48,7 @@ export const useCamera = ({
     audio: false,
     video: true,
   },
+  preferredFacing,
 }: UseCameraParameters = {}): CameraController => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [cameraState, setCameraState] = useState<CameraState>("idle");
@@ -117,6 +120,24 @@ export const useCamera = ({
     }
   };
 
+  const selectPreferredCamera = (availableDevices: MediaDeviceInfo[]) => {
+    if (preferredFacing) {
+      const callback =
+        preferredFacing === "user"
+          ? (d: MediaDeviceInfo) => !isEnvironmentCamera(d.label)
+          : (d: MediaDeviceInfo) => isEnvironmentCamera(d.label);
+      const preferred = availableDevices.find(callback);
+      if (preferred) return preferred;
+    }
+    if (useLastDeviceId && lastDeviceId) {
+      const foundDevice = availableDevices.find(
+        (d) => d.deviceId === lastDeviceId
+      );
+      if (foundDevice) return foundDevice;
+    }
+    return availableDevices[0];
+  };
+
   useEffect(() => {
     const initDevices = async () => {
       try {
@@ -127,13 +148,7 @@ export const useCamera = ({
         setDevices(availableDevices);
 
         if (autoStart && availableDevices.length) {
-          let device = availableDevices[0];
-          if (useLastDeviceId && lastDeviceId) {
-            const foundDevice = availableDevices.find(
-              (d) => d.deviceId === lastDeviceId
-            );
-            if (foundDevice) device = foundDevice;
-          }
+          const device = selectPreferredCamera(availableDevices);
           setSelectedDevice(device);
         }
       } catch (e) {
