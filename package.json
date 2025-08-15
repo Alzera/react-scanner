@@ -1,6 +1,6 @@
 {
   "name": "@alzera/react-scanner",
-  "version": "1.0.15",
+  "version": "1.0.20",
   "description": "Barcode scanner component for React apps",
   "license": "MIT",
   "author": "Alzera Cita <alzeracita23@gmail.com>",
@@ -33,6 +33,7 @@
     "analyze": "npx vite-bundle-visualizer"
   },
   "devDependencies": {
+    "@alzera/react-camera": "^1.0.2",
     "@types/node": "^20.12.7",
     "@types/react": "^18.2.79",
     "@types/react-dom": "^18.2.25",
@@ -44,11 +45,11 @@
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.5",
     "typescript": "^5.4.5",
-    "vite": "^5.2.9",
-    "vite-plugin-dts": "^3.8.3"
+    "vite": "^6.3.5",
+    "vite-plugin-dts": "^4.5.4"
   },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": ">=18.2.0",
+    "react-dom": ">=18.2.0"
   }
 }

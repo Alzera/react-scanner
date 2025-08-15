@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
+import { useCamera } from "@alzera/react-camera";
 
 import { useDecoder } from "./composables/use-decoder";
-import { useCamera } from "./composables/use-camera";
 import type ScannerProps from "./types/scanner-props";
 import type Styleable from "./types/styleable";
 
